@@ -1,10 +1,10 @@
 from fpdf import FPDF
 import csv
 from itertools import combinations
-    
+
 def set_footnote_font():
     pdf.set_font_size(size = 125)
-    
+
 def write_to_slide(lot_line):
     pdf.add_page()
     lot_number = get_lot_number(lot_line)
@@ -17,33 +17,60 @@ def write_to_slide(lot_line):
         pdf.multi_cell(0, height * .1, txt = lot_footnote, align = "C", fill = True)
     else:
         pdf.multi_cell(0, height/cells, txt = lot_number, align = "C", fill = True)
-        
+
 def write_all_to_slide(lot_string, footnote):
     pdf.add_page()
     set_font_size(lot_string)
     cells = compute_cells(lot_string)
+    #print(lot_string)
+    
+    if lot_string.count("/") == 2:
+        lot_string = lot_string.replace("/","")
+    if lot_string.count("/") == 3:
+        print(lot_string)
+        index = lot_string.find("/") + 1
+        temp_index = index
+        print(index)
+        #lot_string = lot_string[:index] + "\n" + lot_string[index:]
+       # print (lot_string)
+        index += lot_string[index:].find("/")
+       # print(index)
+        print(index)
+        lot_string = lot_string[:index] + "\n"+ lot_string[index+1:]
+        print(lot_string)
+        
+    #if lot_string.count("/") == 2:
+    #    lot_string = lot_string.replace("/","")
+
+    if lot_string.count("/") == 1 and len(lot_string) >=6:
+        lot_string = lot_string.replace("/","")
+        
     if footnote != "":
         pdf.multi_cell(0, height/cells * .9, txt = lot_string, align = "C", fill = True)
         set_footnote_font()
         pdf.multi_cell(0, height * .1, txt = footnote, align = "C", fill = True)
     else:
         pdf.multi_cell(0, height/cells, txt = lot_string, align = "C", fill = True)
-        
+
 def set_font_size(lot):
     slash_count = lot.count('/')
     if slash_count == 2 and len(lot) < 6:
         pdf.set_font_size(size = 800)
+    elif len(lot) == 5 and slash_count ==1:
+        pdf.set_font_size(size = 650)
     elif len(lot) < 3:
-        pdf.set_font_size(size = 1200)
+        pdf.set_font_size(size = 1200) #1200
     elif len(lot) < 4:
-        pdf.set_font_size(size = 1000)
+        pdf.set_font_size(size = 1000) #1000
     elif len(lot) < 5:
-        pdf.set_font_size(size = 800)
+        pdf.set_font_size(size = 720)
     elif len(lot) < 11:
-        pdf.set_font_size(size = 600)
+        pdf.set_font_size(size = 720)
     elif len(lot) < 16:
-        pdf.set_font_size(size = 500)
+        pdf.set_font_size(size = 450)
 def compute_cells(lot):
+    if lot.count("/") == 2:
+        return 3
     if len(lot) < 6:
         return 1
     elif len(lot) < 11:
@@ -66,10 +93,38 @@ def get_lot_group(lot_line):
 def get_lot_footnote(lot_line):
     return lot_line[2]
 def correct_formatting (lot_string):
+    #if lot_string.count("/") == 3: # and len(lot_string) > 5:
+    #    print (lot_string)
+    #    index = lot_string.find("/") + 1
+    #    index += lot_string[index:].find("/") + 1
+    #    new_lot_string = lot_string[:index] + "\n" + lot_string[index:]
+    #    return new_lot_string
+    if lot_string.count("/") == 2: #and len(lot_string) == 7:
+        #print (lot_string)
+        index = lot_string.find("/") + 1
+       # print (index)
+        lot_string = lot_string[:index] + "\n" + lot_string[index:]
+       # print (lot_string)
+        index += lot_string[index:].find("/") + 1
+       # print(index)
+        lot_string = lot_string[:index] + "\n" + lot_string[index:]
+       # print("---------")
+        #lot_string = lot_string.replace("/", "")
+        return lot_string
+    
     if lot_string.count("/") == 1 and len(lot_string) == 7:
         index = lot_string.find("/") + 1
         new_lot_string = lot_string[:index] + "\n" + lot_string[index:]
         return new_lot_string
+    if lot_string.count("/") == 1 and len(lot_string) > 5:
+        index = lot_string.find("/") + 1
+        new_lot_string = lot_string[:index] + "\n" + lot_string[index:]
+        return new_lot_string
+   
+        #index = lot_string.find("/") + 1
+        #new_lot_string = lot_string[:index] + "\n" + lot_string[index:]
+        #return new_lot_string
+    
     else:
         return lot_string
 
@@ -128,14 +183,12 @@ while i < length:
 
                     count -= 1
                 grouping = False
-            
+
     # create slide for single lot
     else:
         write_to_slide(lot_list[i])
-    
+
     i += 1
 
 
 pdf.output("lot_slides.pdf")
-
-    
